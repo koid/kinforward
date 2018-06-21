@@ -1,0 +1,29 @@
+version: '3'
+services:
+  kinforward:
+    build: .
+    command: kinforward
+    environment:
+      AWS_REGION: us-east-1
+      AWS_ACCESS_KEY_ID:
+      AWS_SECRET_ACCESS_KEY:
+      AWS_SESSION_TOKEN:
+      KINESIS_STREAM_NAME:
+      CHECKPOINT_TABLE_PREFIX:
+      TAG_KEY:
+      FLUENT_HOST: fluentd
+      FLUENT_PORT: 24224
+      DOGSTATSD_HOST_PORT: dogstatsd:8125
+    depends_on:
+      - fluentd
+      - dogstatsd
+  fluentd:
+    image: fluent/fluentd
+    environment:
+      FLUENTD_CONF: fluentd.example.conf
+    volumes:
+      - .:/fluentd/etc
+  dogstatsd:
+    image: datadog/dogstatsd:6.2.1
+    environment:
+      DD_API_KEY:
