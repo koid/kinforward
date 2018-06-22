@@ -26,8 +26,9 @@ var (
 	checkpointTablePrefix string
 	tagKey                string
 
-	fluentHost = "localhost"
-	fluentPort = 24224
+	fluentSocket string
+	fluentHost   = "localhost"
+	fluentPort   = 24224
 
 	dogStatsdAddr string
 	dogStatsdTags []string
@@ -46,7 +47,8 @@ func init() {
 	}
 
 	tagKey = os.Getenv("TAG_KEY")
-
+	
+	fluentSocket = os.Getenv("FLUENT_SOCKET")
 	if len(os.Getenv("FLUENT_HOST")) != 0 {
 		fluentHost = os.Getenv("FLUENT_HOST")
 	}
@@ -67,11 +69,22 @@ func init() {
 }
 
 func initFluentLogger(retry int) *fluent.Fluent {
-	_l, err := fluent.New(fluent.Config{
-		MarshalAsJSON: true,
-		FluentHost:    fluentHost,
-		FluentPort:    fluentPort,
-	})
+	var cfg fluent.Config
+	if len(fluentSocket) > 0 {
+		cfg = fluent.Config{
+			MarshalAsJSON:    true,
+			FluentNetwork:    "unix",
+			FluentSocketPath: fluentSocket,
+		}
+	} else {
+		cfg = fluent.Config{
+			MarshalAsJSON: true,
+			FluentHost:    fluentHost,
+			FluentPort:    fluentPort,
+		}
+	}
+
+	_l, err := fluent.New(cfg)
 	if err != nil {
 		if retry == 0 {
 			log.Fatalf("fluent.New returned error: %v", err)
