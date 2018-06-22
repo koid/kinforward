@@ -29,8 +29,8 @@ var (
 	fluentHost = "localhost"
 	fluentPort = 24224
 
-	dogStatsdHostPort string
-	dogStatsdTags     []string
+	dogStatsdAddr string
+	dogStatsdTags []string
 
 	clientName string
 )
@@ -54,7 +54,7 @@ func init() {
 		fluentPort, _ = strconv.Atoi(os.Getenv("FLUENT_PORT"))
 	}
 
-	dogStatsdHostPort = os.Getenv("DOGSTATSD_HOST_PORT")
+	dogStatsdAddr = os.Getenv("DOGSTATSD_ADDR")
 	dogStatsdTags = strings.Split(os.Getenv("DOGSTATSD_TAGS"), ",")
 
 	hostname, err := os.Hostname()
@@ -89,7 +89,7 @@ func initDogStatsd() *dogstatsd.Statsd {
 		fmt.Sprintf("app:%s", checkpointTablePrefix),
 		fmt.Sprintf("client:%s", clientName),
 	}...)
-	_s, err := dogstatsd.New(dogStatsdHostPort, dogStatsdTags)
+	_s, err := dogstatsd.New(dogStatsdAddr, dogStatsdTags)
 	if err != nil {
 		log.Fatalf("dogstatsd.New returned error: %v", err)
 	}
@@ -115,7 +115,7 @@ func main() {
 	defer l.Close()
 
 	// statsd
-	if len(dogStatsdHostPort) > 0 {
+	if len(dogStatsdAddr) > 0 {
 		stats = initDogStatsd()
 	}
 
