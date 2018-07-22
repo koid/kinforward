@@ -200,6 +200,7 @@ func main() {
 			}
 			var tag string
 			if tagKey != "" {
+				// append to tag
 				if val, ok := message[tagKey].(string); ok {
 					tag = val
 				} else {
