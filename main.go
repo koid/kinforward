@@ -88,7 +88,6 @@ func initFluentLogger(retry int) *fluent.Fluent {
 		}
 	}
 
-
 	_l, err := fluent.New(cfg)
 	if err != nil {
 		if retry == 0 {
