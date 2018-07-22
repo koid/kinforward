@@ -24,6 +24,7 @@ import (
 var (
 	kinesisStreamName     string
 	checkpointTablePrefix string
+	defaultTag            string
 	tagKey                string
 
 	fluentSocket string
@@ -46,8 +47,12 @@ func init() {
 		log.Fatalln("env CHECKPOINT_TABLE_PREFIX is required")
 	}
 
+	defaultTag = os.Getenv("DEFAULT_TAG")
+	if len(defaultTag) == 0 {
+		defaultTag = "default"
+	}
 	tagKey = os.Getenv("TAG_KEY")
-	
+
 	fluentSocket = os.Getenv("FLUENT_SOCKET")
 	if len(os.Getenv("FLUENT_HOST")) != 0 {
 		fluentHost = os.Getenv("FLUENT_HOST")
@@ -196,9 +201,12 @@ func main() {
 			}
 			var tag string
 			if tagKey != "" {
-				tag, _ = message[tagKey].(string)
-			} else {
-				tag = "default"
+				if val, ok := message[tagKey].(string); ok {
+					tag = val
+				}
+			}
+			if tag == "" {
+				tag = defaultTag
 			}
 			if err := l.Post(tag, message); err != nil {
 				log.Fatalf("Failed to post: %v", err)
