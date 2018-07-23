@@ -26,9 +26,10 @@ var (
 	checkpointTablePrefix string
 	tagKey                string
 
-	fluentSocket string
-	fluentHost   = "localhost"
-	fluentPort   = 24224
+	fluentTagPrefix string
+	fluentSocket    string
+	fluentHost      = "localhost"
+	fluentPort      = 24224
 
 	dogStatsdAddr string
 	dogStatsdTags []string
@@ -47,7 +48,8 @@ func init() {
 	}
 
 	tagKey = os.Getenv("TAG_KEY")
-	
+
+	fluentTagPrefix = os.Getenv("FLUENT_TAG_PREFIX")
 	fluentSocket = os.Getenv("FLUENT_SOCKET")
 	if len(os.Getenv("FLUENT_HOST")) != 0 {
 		fluentHost = os.Getenv("FLUENT_HOST")
@@ -73,12 +75,14 @@ func initFluentLogger(retry int) *fluent.Fluent {
 	if len(fluentSocket) > 0 {
 		cfg = fluent.Config{
 			MarshalAsJSON:    true,
+			TagPrefix:        fluentTagPrefix,
 			FluentNetwork:    "unix",
 			FluentSocketPath: fluentSocket,
 		}
 	} else {
 		cfg = fluent.Config{
 			MarshalAsJSON: true,
+			TagPrefix:     fluentTagPrefix,
 			FluentHost:    fluentHost,
 			FluentPort:    fluentPort,
 		}
@@ -196,7 +200,12 @@ func main() {
 			}
 			var tag string
 			if tagKey != "" {
-				tag, _ = message[tagKey].(string)
+				// append to tag
+				if val, ok := message[tagKey].(string); ok {
+					tag = val
+				} else {
+					tag = "unknown"
+				}
 			} else {
 				tag = "default"
 			}
