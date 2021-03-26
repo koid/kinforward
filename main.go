@@ -137,7 +137,15 @@ func main() {
 	}
 
 	// kinsumer
-	sess := session.Must(session.NewSession(aws.NewConfig()))
+	var sess *session.Session
+	if len(os.Getenv("AWS_ENDPOINT")) != 0 {
+		sess = session.Must(session.NewSession(&aws.Config{
+			Endpoint:         aws.String(os.Getenv("AWS_ENDPOINT")),
+			S3ForcePathStyle: aws.Bool(true),
+		}))
+	} else {
+		sess = session.Must(session.NewSession(aws.NewConfig()))
+	}
 	k, err := kinsumer.NewWithSession(
 		sess,
 		kinesisStreamName,
