@@ -95,7 +95,7 @@ func initFluentLogger(retry int) *fluent.Fluent {
 		}
 		log.Println("Waiting for fluentd...")
 		time.Sleep(3 * time.Second)
-		return initFluentLogger(retry-1)
+		return initFluentLogger(retry - 1)
 	}
 	return _l
 }

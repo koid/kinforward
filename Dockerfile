@@ -1,12 +1,10 @@
-FROM golang:1.10.3-alpine AS builder
+FROM golang:1.16.2-alpine AS builder
 RUN apk add --update git
-RUN go get -u github.com/golang/dep/cmd/dep
 ENV GOPATH /go
 ENV GOOS linux
 ENV GOARCH amd64
 WORKDIR /go/src/github.com/koid/kinforward
 COPY . ./
-RUN dep ensure
 RUN go build -o kinforward
 
 FROM alpine:latest
